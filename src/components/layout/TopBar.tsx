@@ -1,16 +1,18 @@
-import { Menu, Moon, Sun, Plus } from 'lucide-react'
+import { useNoteStore } from '@/store/noteStore'
 import { useUIStore } from '@/store/uiStore'
-import { useGraphStore } from '@/store/graphStore'
+import { Menu, Plus } from 'lucide-react'
+import { Button } from '@/components/ui'
 
 export function TopBar() {
   const toggleSidebar = useUIStore((s) => s.toggleSidebar)
   const theme = useUIStore((s) => s.theme)
   const toggleTheme = useUIStore((s) => s.toggleTheme)
-  const addIdea = useGraphStore((s) => s.addIdea)
+  const createNote = useNoteStore((s) => s.createNote)
+  const setSidebar = useUIStore((s) => s.setSidebar)
 
   const handleQuickAdd = async () => {
-    const title = prompt('Ideen-Titel:')
-    if (title) await addIdea(title)
+    await createNote({ title: 'Neue Notiz' })
+    setSidebar(false)
   }
 
   return (
@@ -24,19 +26,16 @@ export function TopBar() {
 
       <div className="flex-1" />
 
-      <button
-        onClick={handleQuickAdd}
-        className="flex items-center gap-1.5 rounded-md bg-[var(--accent)] px-3 py-1.5 text-sm font-medium text-white hover:bg-[var(--accent-dim)]"
-      >
+      <Button size="sm" onClick={handleQuickAdd}>
         <Plus className="h-4 w-4" />
-        Neue Idee
-      </button>
+        Neue Notiz
+      </Button>
 
       <button
         onClick={toggleTheme}
         className="rounded-md p-1.5 text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)]"
       >
-        {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+        {theme === 'dark' ? '☀️' : '🌙'}
       </button>
     </header>
   )

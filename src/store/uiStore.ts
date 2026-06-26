@@ -11,7 +11,7 @@ interface UIState {
   setSidebar: (open: boolean) => void
 }
 
-const STORAGE_KEY = 'neurolink-theme'
+const STORAGE_KEY = 'neurolink_theme'
 
 function getInitialTheme(): Theme {
   if (typeof window === 'undefined') return 'dark'
