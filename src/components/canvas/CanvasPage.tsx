@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import {
   ReactFlow,
   Background,
@@ -7,6 +7,7 @@ import {
   type Node,
   type Edge,
   type Connection as RFConnection,
+  type NodeMouseHandler,
   addEdge as rfAddEdge,
   useNodesState,
   useEdgesState,
@@ -15,7 +16,8 @@ import {
 import '@xyflow/react/dist/style.css'
 import { useGraphStore } from '@/store/graphStore'
 import { useUIStore } from '@/store/uiStore'
-import type { ConnectionType } from '@/types'
+import type { ConnectionType, Idea } from '@/types'
+import { IdeaDetailModal } from './IdeaDetailModal'
 
 const connectionTypeColors: Record<ConnectionType, string> = {
   associates: '#7c5cff',
@@ -34,6 +36,9 @@ export function CanvasPage() {
   const addIdea = useGraphStore((s) => s.addIdea)
   const theme = useUIStore((s) => s.theme)
 
+  const [selectedIdea, setSelectedIdea] = useState<Idea | null>(null)
+  const [modalOpen, setModalOpen] = useState(false)
+
   const nodes: Node[] = useMemo(
     () =>
       ideas
@@ -50,6 +55,7 @@ export function CanvasPage() {
             fontSize: '13px',
             padding: '8px 12px',
             width: 'auto',
+            cursor: 'pointer',
           },
         })),
     [ideas],
@@ -97,10 +103,20 @@ export function CanvasPage() {
     [updateIdea],
   )
 
+  const onNodeClick: NodeMouseHandler = useCallback(
+    (_evt, node) => {
+      const idea = ideas.find((i) => i.id === node.id)
+      if (idea) {
+        setSelectedIdea(idea)
+        setModalOpen(true)
+      }
+    },
+    [ideas],
+  )
+
   const onDoubleClick = useCallback(async (evt: React.MouseEvent) => {
-    // Doppelklick auf leeren Canvas → neue Idee an Klick-Position
     const target = evt.target as HTMLElement
-    if (target.className.includes('react-flow__pane') === false) return
+    if (!target.className.includes('react-flow__pane')) return
     const title = prompt('Neue Idee:')
     if (!title) return
     const bounds = (evt.currentTarget as HTMLElement).getBoundingClientRect()
@@ -108,25 +124,34 @@ export function CanvasPage() {
   }, [addIdea])
 
   return (
-    <div className="h-full w-full" onDoubleClick={onDoubleClick}>
-      <ReactFlow
-        nodes={rfNodes}
-        edges={rfEdges}
-        onNodesChange={onNodesChange}
-        onEdgesChange={onEdgesChange}
-        onConnect={onConnect}
-        onNodeDragStop={onNodeDragStop}
-        fitView
-        colorMode={theme}
-        className="bg-[var(--bg-primary)]"
-      >
-        <Background variant={BackgroundVariant.Dots} gap={20} size={1} color="var(--border)" />
-        <Controls className="!bg-[var(--bg-secondary)] !border-[var(--border)]" />
-        <MiniMap
-          className="!bg-[var(--bg-secondary)] !border-[var(--border)]"
-          nodeColor={(n) => (n.style?.border as string) || 'var(--accent)'}
-        />
-      </ReactFlow>
-    </div>
+    <>
+      <div className="h-full w-full" onDoubleClick={onDoubleClick}>
+        <ReactFlow
+          nodes={rfNodes}
+          edges={rfEdges}
+          onNodesChange={onNodesChange}
+          onEdgesChange={onEdgesChange}
+          onConnect={onConnect}
+          onNodeDragStop={onNodeDragStop}
+          onNodeClick={onNodeClick}
+          fitView
+          colorMode={theme}
+          className="bg-[var(--bg-primary)]"
+        >
+          <Background variant={BackgroundVariant.Dots} gap={20} size={1} color="var(--border)" />
+          <Controls className="!bg-[var(--bg-secondary)] !border-[var(--border)]" />
+          <MiniMap
+            className="!bg-[var(--bg-secondary)] !border-[var(--border)]"
+            nodeColor={(n) => (n.style?.border as string) || 'var(--accent)'}
+          />
+        </ReactFlow>
+      </div>
+
+      <IdeaDetailModal
+        idea={selectedIdea}
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+      />
+    </>
   )
 }

@@ -1,6 +1,7 @@
 import { Outlet } from 'react-router-dom'
 import { Sidebar } from './Sidebar'
 import { TopBar } from './TopBar'
+import { BottomNav } from './BottomNav'
 import { useUIStore } from '@/store/uiStore'
 
 export function AppLayout() {
@@ -11,10 +12,11 @@ export function AppLayout() {
       {sidebarOpen && <Sidebar />}
       <div className="flex flex-1 flex-col overflow-hidden">
         <TopBar />
-        <main className="flex-1 overflow-hidden">
+        <main className="flex-1 overflow-hidden pb-14 md:pb-0">
           <Outlet />
         </main>
       </div>
+      <BottomNav />
     </div>
   )
 }
