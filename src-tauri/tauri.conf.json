@@ -36,12 +36,5 @@
       "icons/icon.ico"
     ],
     "category": "Productivity"
-  },
-  "plugins": {
-    "sql": {
-      "preload": {
-        "db": "sqlite:neurolink.db"
-      }
-    }
   }
 }
