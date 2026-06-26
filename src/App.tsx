@@ -5,6 +5,8 @@ import { useUIStore } from '@/store/uiStore'
 import { AppLayout } from '@/components/layout/AppLayout'
 import { CanvasPage } from '@/components/canvas/CanvasPage'
 import { IdeasListPage } from '@/components/layout/IdeasListPage'
+import { SettingsPage } from '@/components/layout/SettingsPage'
+import { AuthCallback } from '@/services/auth-callback'
 
 export default function App() {
   const init = useGraphStore((s) => s.init)
@@ -20,9 +22,11 @@ export default function App() {
 
   return (
     <Routes>
+      <Route path="/auth/callback" element={<AuthCallback />} />
       <Route element={<AppLayout />}>
         <Route path="/" element={<CanvasPage />} />
         <Route path="/ideas" element={<IdeasListPage />} />
+        <Route path="/settings" element={<SettingsPage />} />
       </Route>
     </Routes>
   )
