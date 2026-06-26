@@ -1,14 +1,13 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use tauri::Manager;
-use tauri_plugin_sql::{Migration, MigrationStrategy};
+use tauri_plugin_sql::{Migration, MigrationKind};
 
 fn migrations() -> Vec<Migration> {
     vec![Migration {
         version: 1,
         description: "Create NeuroLink schema",
-        sql: include_str!("../src/db/schema.sql"),
-        kind: MigrationStrategy::Up,
+        sql: include_str!("../../src/db/schema.sql"),
+        kind: MigrationKind::Up,
     }]
 }
 
