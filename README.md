@@ -11,9 +11,8 @@ Ideen sind Knoten, Verbindungen sind typisierte Kanten (Synapsen). Visuell bearb
 | Styling | TailwindCSS v4 |
 | State | Zustand |
 | Canvas | React Flow (@xyflow/react) |
-| Editor | TipTap (geplant) |
-| Desktop | Tauri v2 (geplant) |
-| Mobile | Capacitor (geplant) |
+| Desktop | Tauri v2 |
+| Mobile | Capacitor 6 (Android) |
 | Storage | SQLite (Tauri/Capacitor) / In-Memory (Dev) |
 | Sync | Google Drive API (drive.appdata) |
 
@@ -26,12 +25,49 @@ npm install
 # Dev-Server (http://localhost:1420)
 npm run dev
 
-# Production Build
+# Production Build (Web)
 npm run build
 
 # Preview Build
 npm run preview
 ```
+
+## Desktop Build (Tauri)
+
+**Voraussetzungen:** Rust + Cargo installiert ([rustup.rs](https://rustup.rs))
+
+```bash
+# Tauri CLI installieren (falls nicht vorhanden)
+npm install -D @tauri-apps/cli
+
+# Development (öffnet Desktop-Fenster)
+npm run tauri:dev
+
+# Production Build (erstellt .deb / .AppImage / .msi / .app)
+npm run tauri:build
+```
+
+Die Binaries liegen danach in `src-tauri/target/release/bundle/`.
+
+## Android Build (Capacitor)
+
+**Voraussetzungen:** Android Studio + JDK 17 installiert
+
+```bash
+# Capacitor Dependencies
+npm install
+
+# Android Platform hinzufügen
+npm run cap:android
+
+# Nach Änderungen am Web-Code synchronisieren
+npm run cap:sync
+
+# In Android Studio öffnen
+npm run cap:open
+```
+
+In Android Studio dann "Run" drücken, um die APK zu bauen.
 
 ## Projekt-Struktur
 
@@ -39,23 +75,28 @@ npm run preview
 neurolink/
 ├── src/
 │   ├── components/
-│   │   ├── canvas/      # React Flow Idea-Graph
-│   │   ├── layout/      # Sidebar, TopBar, AppLayout
-│   │   └── ui/          # Wiederverwendbare UI-Komponenten
-│   ├── db/              # DB-Client-Interface + Implementierungen
-│   │   ├── client.ts    # Interface & Helpers
-│   │   ├── memory-db.ts # In-Memory (Dev-Fallback)
-│   │   └── schema.sql   # SQLite Schema
-│   ├── hooks/           # Custom React Hooks
-│   ├── lib/             # Utility-Funktionen
-│   ├── services/        # Google Drive Sync (Phase 4)
-│   ├── store/           # Zustand Stores
-│   │   ├── graphStore.ts
-│   │   └── uiStore.ts
-│   ├── types/           # TypeScript Domain-Modelle
+│   │   ├── canvas/        # React Flow Idea-Graph + Detail-Modal
+│   │   ├── layout/        # Sidebar, TopBar, BottomNav, AppLayout
+│   │   └── ui/            # Button, Input, Card, Modal, Badge
+│   ├── db/
+│   │   ├── client.ts      # DB-Interface & Helpers
+│   │   ├── memory-db.ts   # In-Memory (Dev) + Factory
+│   │   ├── tauri-db.ts    # Tauri SQLite (Desktop)
+│   │   └── schema.sql     # SQLite Schema
+│   ├── hooks/             # useGraph
+│   ├── lib/               # graph-utils (Traversal, Cluster)
+│   ├── services/          # drive-sync, auth-callback
+│   ├── store/             # graphStore, uiStore
+│   ├── types/             # Domain-Modelle
 │   └── App.tsx
-├── .env.example         # Google OAuth Credentials (Phase 4)
-├── vite.config.ts
+├── src-tauri/             # Tauri Desktop (Rust)
+│   ├── Cargo.toml
+│   ├── tauri.conf.json
+│   └── src/
+│       ├── lib.rs         # Tauri Plugin-SQL + Migrations
+│       └── main.rs
+├── capacitor.config.ts    # Android Config
+├── .env.example           # Google OAuth Credentials
 └── package.json
 ```
 
@@ -72,28 +113,18 @@ Siehe `src/db/schema.sql` für das vollständige SQLite-Schema.
 
 **Connection-Types:** `associates`, `extends`, `contradicts`, `inspires`, `refines`, `custom`
 
-## Build-Targets (geplant)
+**Sync-Strategie:** Last-Write-Wins über `sync_version` (monoton steigend). Soft-Deletes via Tombstone (`deleted_at`).
 
-### Desktop (Tauri)
-```bash
-npm run tauri dev    # Development
-npm run tauri build  # Production (Windows/Linux/Mac)
-```
+## Google Drive Sync Setup
 
-### Android (Capacitor)
-```bash
-npx cap add android
-npx cap sync
-npx cap open android  # Öffnet Android Studio
-```
+1. Öffne die [Google Cloud Console](https://console.cloud.google.com/apis/credentials)
+2. Erstelle ein neues Projekt oder wähle ein bestehendes
+3. Aktiviere die **Google Drive API**
+4. Erstelle OAuth 2.0 Client Credentials (Typ: Desktop App)
+5. Trage Client ID und Client Secret in der App unter **Settings** ein
+6. Klicke auf "Mit Google verbinden" und erlaube den Zugriff
 
-## Google Drive Sync (Phase 4)
-
-Die App nutzt den `drive.appdata` Scope — Daten werden in einem versteckten App-Ordner auf dem Google Drive des Nutzers gespeichert.
-
-1. Google Cloud Project erstellen → Drive API aktivieren
-2. OAuth 2.0 Client ID erstellen (Typ: Desktop App)
-3. `.env` Datei anlegen (siehe `.env.example`)
+Die App nutzt den `drive.appdata` Scope — Daten werden in einem versteckten App-Ordner auf deinem Google Drive gespeichert. Niemand sonst hat Zugriff.
 
 ## Lizenz
 

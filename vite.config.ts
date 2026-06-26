@@ -14,4 +14,9 @@ export default defineConfig({
     port: 1420,
     strictPort: true,
   },
+  build: {
+    rollupOptions: {
+      external: ['@tauri-apps/plugin-sql', '@tauri-apps/api'],
+    },
+  },
 })

@@ -111,9 +111,8 @@ export async function getDB(): Promise<DBClient> {
 
   // Tauri-Erkennung
   if (typeof window !== 'undefined' && '__TAURI__' in window) {
-    // Phase 5: import('@/db/tauri-db') → dynamischer Import
-    // Vorerst Fallback auf In-Memory
-    _instance = new InMemoryDB()
+    const { createTauriDB } = await import('@/db/tauri-db')
+    _instance = await createTauriDB()
     return _instance
   }
 

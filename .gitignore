@@ -39,6 +39,8 @@ android-app/
 *.apk
 *.aab
 
+google-services.json
+
 # OS
 Thumbs.db
 
